@@ -69,23 +69,6 @@ const programme = {
  ]
 };
 
-/* Muestra ilustrativa de experiencias mencionadas en los programas, no catálogo exhaustivo. */
-const projects=[
- {name:'Tartesos en Comunidad',year:'2025',place:'Guareña · Badajoz',category:'comunidad',categoryLabel:'Comunidad',description:'Iniciativa patrimonial presentada por UNDERGROUND Colectiva.'},
- {name:'Cartografías emocionales',year:'2025',place:'Granada',category:'innovacion',categoryLabel:'Innovación',description:'Narrativas digitales para redescubrir y reinterpretar el patrimonio.'},
- {name:'Telaras de la Zubia',year:'2025',place:'La Zubia · Granada',category:'memoria',categoryLabel:'Memoria',description:'Saberes textiles y transmisión de memoria colectiva a través del taller «Tejiendo la memoria».'},
- {name:'Innovred',year:'2025',place:'Axarquía · Málaga',category:'innovacion',categoryLabel:'Innovación',description:'Una iniciativa patrimonial presentada en la mesa de proyectos del IV Encuentro.'},
- {name:'PLANEA',year:'2025',place:'Red de centros educativos',category:'educacion',categoryLabel:'Educación',description:'Red de colaboración entre centros educativos, agentes e instituciones culturales.'},
- {name:'Sevilla en peligro',year:'2025',place:'Sevilla',category:'comunidad',categoryLabel:'Comunidad',description:'Dibujos y comunicación ciudadana para llamar la atención sobre el patrimonio urbano.'},
- {name:'FotoC3: Ciudadanía, Creatividad y Cuidado',year:'2023',place:'Salamanca',category:'educacion',categoryLabel:'Educación',description:'Patrimonio educativo universitario y fomento de la coeducación.'},
- {name:'Museo etnológico de la mujer gitana',year:'2023',place:'Granada',category:'memoria',categoryLabel:'Memoria',description:'Experiencia de la Asociación de Mujeres Gitanas Romi compartida en el III Encuentro.'},
- {name:'Escuela Patrimonial del CEIMJ',year:'2023',place:'Zaragoza',category:'educacion',categoryLabel:'Educación',description:'Experiencia patrimonial desarrollada en un centro de educación e internamiento por medida judicial.'},
- {name:'El Jardín arqueológico',year:'2021',place:'San Fernando · Cádiz',category:'educacion',categoryLabel:'Educación',description:'Proyecto audiovisual del IES Jorge Juan presentado en el II Encuentro.'},
- {name:'PAX – Patios de la Axerquía',year:'2021',place:'Córdoba',category:'comunidad',categoryLabel:'Comunidad',description:'Iniciativa patrimonial citada en el espacio de actualidad del II Encuentro.'},
- {name:'Huelva te mira',year:'2018',place:'Huelva',category:'comunidad',categoryLabel:'Comunidad',description:'Plataforma ciudadana presente en la sesión «Creando vínculos y conexiones».'},
- {name:'Garden Atlas',year:'2018',place:'Sevilla',category:'innovacion',categoryLabel:'Innovación',description:'Experiencia presentada en el bloque de innovación social del I Encuentro.'}
-];
-
 const $$=(sel,root=document)=>Array.from(root.querySelectorAll(sel));
 const norm=(s)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const programmeNode=document.querySelector('#schedule-list');
@@ -129,32 +112,6 @@ $$('.edition-tab').forEach(btn=>{
     evt.preventDefault();changeEdition(tabs[next].dataset.edition,true);
   });
 });
-
-let projectFilter='todas';let projectSearch='';
-const projectGrid=document.querySelector('#projects-grid');
-function drawProjects(){
-  const selected=projects.filter(p=>(projectFilter==='todas'||p.category===projectFilter)&&norm([p.name,p.place,p.description,p.year].join(' ')).includes(norm(projectSearch.trim())));
-  const items=selected.map(p=>{
-    const card=document.createElement('article');card.className='project-card';
-    const head=document.createElement('div');head.className='project-card-head';
-    const k=document.createElement('span');k.textContent=p.categoryLabel.toUpperCase();
-    const y=document.createElement('b');y.textContent=p.year;head.append(k,y);
-    const body=document.createElement('div');body.className='project-card-body';
-    const h=document.createElement('h3');h.textContent=p.name;
-    const desc=document.createElement('p');desc.textContent=p.description;
-    const foot=document.createElement('div');foot.className='project-card-foot';
-    const loc=document.createElement('span');loc.textContent=p.place;
-    const source=document.createElement('a');source.href=editions[p.year].links[0][1];source.target='_blank';source.rel='noopener noreferrer';source.textContent='Programa ↗';source.className='project-source';
-    source.style.cssText='font-size:10px;font-weight:800;color:#377e5a;white-space:nowrap';
-    foot.append(loc,source);body.append(h,desc,foot);card.append(head,body);return card;
-  });
-  if(!items.length){const empty=document.createElement('p');empty.className='projects-empty';empty.textContent='No se han encontrado iniciativas con esos criterios. Prueba otra búsqueda o filtro.';items.push(empty);}
-  projectGrid.replaceChildren(...items);
-  const counter=document.querySelector('#project-count');counter.textContent=`${selected.length} de ${projects.length} iniciativas de esta selección ilustrativa · Fuente: programas oficiales de Redactívate (2018–2025).`;
-}
-$$('.filter-pill').forEach(btn=>btn.addEventListener('click',()=>{projectFilter=btn.dataset.filter;$$('.filter-pill').forEach(b=>{let selected=b===btn;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected));});drawProjects();}));
-const searchInput=document.querySelector('#project-search');if(searchInput)searchInput.addEventListener('input',()=>{projectSearch=searchInput.value;drawProjects();});
-if(projectGrid)drawProjects();
 
 const menuToggle=document.querySelector('.menu-toggle'), menu=document.querySelector('#main-nav');
 function setMenu(open){menu.classList.toggle('open',open);menuToggle.setAttribute('aria-expanded',String(open));menuToggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');}
