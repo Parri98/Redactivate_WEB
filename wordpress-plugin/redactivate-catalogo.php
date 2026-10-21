@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Redactívate · Catálogo de buenas prácticas
  * Description: Modelo de contenido para gestionar experiencias Redactívate en WordPress y exponerlas a Drupal mediante REST API.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: Prototipo para revisión técnica del IAPH
  * License: GPL-2.0-or-later
  */
@@ -22,7 +22,7 @@ add_action('init', function () {
             'hierarchical'=>true, 'rewrite'=>['slug'=>$key],
         ]);
     }
-    foreach (['red_localidad','red_direccion','red_enlaces','red_publicaciones','red_origen_id'] as $meta) {
+    foreach (['red_localidad','red_direccion','red_enlaces','red_publicaciones','red_origen_id','red_galeria','red_latitud','red_longitud','red_precision_geo'] as $meta) {
         register_post_meta('red_iniciativa', $meta, [
             'single'=>true, 'type'=>'string', 'show_in_rest'=>true,
             'sanitize_callback'=>'sanitize_textarea_field', 'auth_callback'=>function(){ return current_user_can('edit_posts'); },
@@ -36,12 +36,15 @@ add_action('add_meta_boxes', function () {
         $fields=[
           'red_localidad'=>'Localidad','red_direccion'=>'Dirección / referencia de localización',
           'red_enlaces'=>'Enlaces complementarios (una URL por línea)',
-          'red_publicaciones'=>'Publicaciones (una URL por línea)'
+          'red_publicaciones'=>'Publicaciones (una URL por línea)',
+          'red_galeria'=>'Galería fotográfica (URL absolutas de WordPress, una por línea)',
+          'red_latitud'=>'Latitud orientativa (WGS84)','red_longitud'=>'Longitud orientativa (WGS84)',
+          'red_precision_geo'=>'Tipo de localización (localidad/provincia)'
         ];
         foreach ($fields as $key=>$label) {
             $value=get_post_meta($post->ID, $key, true);
             echo '<p><label for="'.esc_attr($key).'"><strong>'.esc_html($label).'</strong></label><br>';
-            if(in_array($key,['red_enlaces','red_publicaciones'],true)) {
+            if(in_array($key,['red_enlaces','red_publicaciones','red_galeria'],true)) {
                 echo '<textarea rows="4" style="width:100%" id="'.esc_attr($key).'" name="'.esc_attr($key).'">'.esc_textarea($value).'</textarea>';
             } else {
                 echo '<input style="width:100%" id="'.esc_attr($key).'" name="'.esc_attr($key).'" value="'.esc_attr($value).'">';
@@ -56,11 +59,11 @@ add_action('save_post_red_iniciativa', function ($post_id) {
     if (!isset($_POST['red_ficha_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['red_ficha_nonce'])), 'red_save_ficha')) return;
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
     if (!current_user_can('edit_post',$post_id)) return;
-    foreach (['red_localidad','red_direccion','red_enlaces','red_publicaciones'] as $field) {
+    foreach (['red_localidad','red_direccion','red_enlaces','red_publicaciones','red_galeria','red_latitud','red_longitud','red_precision_geo'] as $field) {
         if (!isset($_POST[$field])) continue;
         $raw=wp_unslash($_POST[$field]);
         if (!is_string($raw)) continue;
-        if(in_array($field,['red_enlaces','red_publicaciones'],true)) {
+        if(in_array($field,['red_enlaces','red_publicaciones','red_galeria'],true)) {
             $clean=[];
             foreach(preg_split('/\R/', $raw) as $line){ $url=esc_url_raw(trim($line)); if($url && preg_match('~^https?://~',$url))$clean[]=$url; }
             update_post_meta($post_id,$field,implode("\n",$clean));
@@ -82,6 +85,11 @@ add_action('rest_api_init',function(){
            }
            $links=trim((string)get_post_meta($p->ID,'red_enlaces',true));
            $pubs=trim((string)get_post_meta($p->ID,'red_publicaciones',true));
+           $gallery=trim((string)get_post_meta($p->ID,'red_galeria',true));
+           $lat=(string)get_post_meta($p->ID,'red_latitud',true);
+           $lng=(string)get_post_meta($p->ID,'red_longitud',true);
+           $urls=array_values(array_filter(preg_split('/\R/',$gallery)));
+           $gallery_items=array_map(function($u) use($p){return ['src'=>$u,'alt'=>'Imagen de '.get_the_title($p)];},$urls);
            $out[]=[
              'id'=>'wp-'.$p->ID, 'titulo'=>get_the_title($p),
              'provincia'=>$terms['red_provincia'][0]??'', 'localidad'=>(string)get_post_meta($p->ID,'red_localidad',true),
@@ -90,7 +98,9 @@ add_action('rest_api_init',function(){
              'descripcion'=>wp_strip_all_tags($p->post_content),
              'enlaces'=>array_values(array_filter(preg_split('/\R/',$links))),
              'anio'=>$terms['red_edicion'][0]??'',
-             'foto'=>get_the_post_thumbnail_url($p,'large')?:'',
+             'foto'=>get_the_post_thumbnail_url($p,'large')?:($urls[0]??''),
+             'galeria'=>$gallery_items,
+             'geo'=>(is_numeric($lat)&&is_numeric($lng))?['lat'=>(float)$lat,'lng'=>(float)$lng,'precision'=>(string)get_post_meta($p->ID,'red_precision_geo',true)]:null,
              'publicaciones'=>array_values(array_filter(preg_split('/\R/',$pubs)))
            ];
        }
@@ -118,6 +128,13 @@ if (defined('WP_CLI') && WP_CLI) {
             $links=array_filter(array_map('esc_url_raw',(array)($item[$field]??[])));
             update_post_meta($id,'red_'.$field,implode("\n",$links));
          }
+         if(!empty($item['geo']) && isset($item['geo']['lat'],$item['geo']['lng'])){
+           update_post_meta($id,'red_latitud',(string)$item['geo']['lat']);
+           update_post_meta($id,'red_longitud',(string)$item['geo']['lng']);
+           update_post_meta($id,'red_precision_geo',sanitize_text_field($item['geo']['precision']??'localidad'));
+         }
+         // Las rutas relativas de las imágenes del prototipo NO se importan como archivos de WordPress.
+         // Se añadirán a la Biblioteca de Medios tras la validación de sus derechos de uso.
          if(!empty($item['provincia']))wp_set_object_terms($id,sanitize_text_field($item['provincia']),'red_provincia');
          if(!empty($item['anio']))wp_set_object_terms($id,sanitize_text_field($item['anio']),'red_edicion');
          if(!empty($item['tematicas']))wp_set_object_terms($id,array_map('sanitize_text_field',$item['tematicas']),'red_tematica');
