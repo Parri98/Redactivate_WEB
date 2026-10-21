@@ -61,20 +61,29 @@
 <div class="catalogue-selects"><label>Provincia <select id="catalogue-prov"><option value="">Todas las provincias</option></select></label><label>Edición <select id="catalogue-year"><option value="">Todas las ediciones</option></select></label><label>Temática <select id="catalogue-topic"><option value="">Todas las temáticas</option></select></label><button class="reset-button" id="catalogue-reset" type="reset">↺ Limpiar filtros</button></div>
 </form>
 <div class="catalogue-toolbar"><p aria-live="polite" id="catalogue-count">Cargando iniciativas…</p><label class="sort-label">Ordenar <select id="catalogue-sort"><option value="recent">Edición más reciente</option><option value="az">Título (A-Z)</option><option value="province">Provincia (A-Z)</option></select></label></div>
-<div class="catalogue-view-switch" id="mapa" aria-label="Modo de explorar el catálogo">
-<button id="show-list" type="button" aria-pressed="true">▦ &nbsp; Ver fichas</button>
-<button id="show-map" type="button" aria-pressed="false">⌖ &nbsp; Explorar mapa</button>
-<span>Los filtros se aplican a ambas vistas.</span>
+<div class="catalogue-map-shell" id="mapa">
+<div class="catalogue-inline-map-head">
+<div>
+<div class="section-kicker"><span class="kicker-square lime"></span> EXPLORACIÓN VISUAL · MAPA INTERACTIVO</div>
+<h3>Busca y entra desde el mapa</h3>
+<p>Además del listado de fichas, el mapa aparece directamente en la web para que la búsqueda sea más visual: puedes filtrar, localizar un municipio y pinchar en cada actividad para abrir su ficha.</p>
+</div>
+<div class="catalogue-inline-map-note">Los filtros del buscador actualizan el mapa y las fichas al mismo tiempo.</div>
+</div>
+<div id="catalogue-map-view">
+  <div class="map-explainer"><div><strong>El patrimonio, sobre el territorio.</strong><p>Explora las localidades de las iniciativas. Si varios proyectos comparten municipio aparecen juntos en el mismo marcador; pulsa para acceder a sus fichas.</p></div><div class="map-key"><span><i style="background:#e6a04f"></i>2018</span><span><i style="background:#4b9abe"></i>2021</span><span><i style="background:#a381b4"></i>2023</span><span><i style="background:#0f9473"></i>2025</span><span><i style="background:#285f54"></i>Varias ediciones</span></div></div>
+  <div id="initiative-map" role="region" aria-label="Mapa interactivo de iniciativas de Redactívate"></div>
+  <p id="map-status" class="map-status" aria-live="polite">Preparando mapa interactivo…</p>
+  <p class="map-disclaimer"><strong>Precisión:</strong> los puntos representan el centro aproximado de los municipios recogidos en el inventario, no las instalaciones ni direcciones exactas de cada experiencia. Los marcadores deben validarse antes de la publicación institucional. Cartografía © OpenStreetMap.</p>
+</div>
+</div>
+<div class="catalogue-results-head">
+  <h3>Resultados en fichas</h3>
+  <p>Debajo del mapa se mantienen las fichas para seguir explorando cada iniciativa con más detalle.</p>
 </div>
 <div id="catalogue-list-view">
 <div aria-live="polite" class="catalogue-grid" id="catalogue-grid"></div>
 <div class="catalogue-more"><button class="btn btn-dark" id="catalogue-more" type="button">Mostrar más iniciativas ↓</button></div>
-</div>
-<div id="catalogue-map-view" hidden>
-  <div class="map-explainer"><div><strong>El patrimonio, sobre el territorio.</strong><p>Explora las localidades de las iniciativas. Si varios proyectos comparten municipio aparecen juntos en el mismo marcador; pulsa para acceder a sus fichas.</p></div><div class="map-key"><span><i style="background:#e6a04f"></i>2018</span><span><i style="background:#4b9abe"></i>2021</span><span><i style="background:#a381b4"></i>2023</span><span><i style="background:#0f9473"></i>2025</span><span><i style="background:#285f54"></i>Varias ediciones</span></div></div>
-  <div id="initiative-map" role="region" aria-label="Mapa interactivo de iniciativas de Redactívate"></div>
-  <p id="map-status" class="map-status" aria-live="polite">El mapa se cargará cuando pulses «Explorar mapa».</p>
-  <p class="map-disclaimer"><strong>Precisión:</strong> los puntos representan el centro aproximado de los municipios recogidos en el inventario, no las instalaciones ni direcciones exactas de cada experiencia. Los marcadores deben validarse antes de la publicación institucional. Cartografía © OpenStreetMap.</p>
 </div>
 <div class="catalogue-footnote"><span>Las fichas proceden del Excel de trabajo facilitado. Algunas descripciones, años y publicaciones están pendientes de revisión. El archivo fotográfico se irá ampliando.</span><a download="" href="assets/data/iniciativas.json">Descargar catálogo en JSON ↗</a></div>
 </div>

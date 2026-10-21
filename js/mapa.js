@@ -4,6 +4,7 @@ window.REDACTIVATE_MAPA=(()=>{
  let map=null,layer=null,loading=null;
  const holder=document.getElementById('initiative-map'),status=document.getElementById('map-status');
  const colors={'2018':'#E6A04F','2021':'#4B9ABE','2023':'#A381B4','2025':'#0F9473'};
+ const logoPath='assets/img/favicon.svg';
  function loadLeaflet(){
   if(window.L)return Promise.resolve();if(loading)return loading;
   loading=new Promise((resolve,reject)=>{
@@ -19,6 +20,10 @@ window.REDACTIVATE_MAPA=(()=>{
   status.textContent='Ubicaciones municipales aproximadas. No son coordenadas exactas de las iniciativas.';
   setTimeout(()=>map.invalidateSize(),50);
  }
+ function makeMarker(color,count){
+  const html=`<div class="map-marker" style="--marker-color:${color}"><span class="map-marker-core"><img src="${logoPath}" alt=""/></span>${count>1?`<span class="map-marker-count">${count}</span>`:''}</div>`;
+  return L.divIcon({className:'redactivate-divicon',html,iconSize:[48,58],iconAnchor:[24,54],popupAnchor:[0,-46]});
+ }
  function update(items){
   if(!map||!layer)return;
   layer.clearLayers();let missing=0;
@@ -32,7 +37,7 @@ window.REDACTIVATE_MAPA=(()=>{
   for(const {g,entries,name} of grouped.values()){
    const uniqueYears=[...new Set(entries.map(p=>p.anio))];
    const col=uniqueYears.length===1?(colors[uniqueYears[0]]||'#617A6B'):'#285F54';
-   const marker=L.circleMarker([Number(g.lat),Number(g.lng)],{radius:Math.min(19,8+entries.length*1.1),color:'#fff',weight:2.5,fillColor:col,fillOpacity:.95});
+   const marker=L.marker([Number(g.lat),Number(g.lng)],{icon:makeMarker(col,entries.length),keyboard:true,title:name||'Localidad de iniciativas'});
    const popup=document.createElement('div');popup.className='map-popup';
    const h=document.createElement('h3');h.textContent=name||'Localidad por verificar';popup.append(h);
    const p=document.createElement('p');p.textContent=entries.length+' '+(entries.length===1?'iniciativa':'iniciativas')+' · Ubicación municipal orientativa';popup.append(p);
